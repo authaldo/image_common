@@ -48,74 +48,6 @@
 namespace image_transport
 {
 
-/*!
- * \brief Advertise an image topic, free function version.
- */
-IMAGE_TRANSPORT_PUBLIC
-Publisher create_publisher(
-  NodeInterfaces::SharedPtr node_interfaces,
-  const std::string & base_topic,
-  rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
-  rclcpp::PublisherOptions options = rclcpp::PublisherOptions());
-
-template<typename NodeT>
-Publisher create_publisher(
-  NodeT && node,
-  const std::string & base_topic,
-  rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
-  rclcpp::PublisherOptions options = rclcpp::PublisherOptions())
-{
-  return create_publisher(
-    create_node_interfaces(std::forward<NodeT>(node)), base_topic, custom_qos, options);
-}
-
-/**
- * \brief Subscribe to an image topic, free function version.
- */
-IMAGE_TRANSPORT_PUBLIC
-Subscriber create_subscription(
-  NodeInterfaces::SharedPtr node_interfaces,
-  const std::string & base_topic,
-  const Subscriber::Callback & callback,
-  const std::string & transport,
-  rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
-  rclcpp::SubscriptionOptions options = rclcpp::SubscriptionOptions());
-
-template<typename NodeT>
-Subscriber create_subscription(
-  NodeT && node,
-  const std::string & base_topic,
-  const Subscriber::Callback & callback,
-  const std::string & transport,
-  rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
-  rclcpp::SubscriptionOptions options = rclcpp::SubscriptionOptions())
-{
-  return create_subscription(
-    create_node_interfaces(std::forward<NodeT>(node)),
-    base_topic, callback, transport, custom_qos, options);
-}
-
-/*!
- * \brief Advertise a camera, free function version.
- */
-IMAGE_TRANSPORT_PUBLIC
-CameraPublisher create_camera_publisher(
-  rclcpp::Node * node,
-  const std::string & base_topic,
-  rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
-  rclcpp::PublisherOptions pub_options = rclcpp::PublisherOptions());
-
-/*!
- * \brief Subscribe to a camera, free function version.
- */
-IMAGE_TRANSPORT_PUBLIC
-CameraSubscriber create_camera_subscription(
-  rclcpp::Node * node,
-  const std::string & base_topic,
-  const CameraSubscriber::Callback & callback,
-  const std::string & transport,
-  rmw_qos_profile_t custom_qos = rmw_qos_profile_default);
-
 IMAGE_TRANSPORT_PUBLIC
 std::vector<std::string> getDeclaredTransports();
 
@@ -136,17 +68,16 @@ public:
   using VoidPtr = std::shared_ptr<void>;
   using ImageConstPtr = sensor_msgs::msg::Image::ConstSharedPtr;
   using CameraInfoConstPtr = sensor_msgs::msg::CameraInfo::ConstSharedPtr;
+  using CameraSubscriber = CameraSubscriber<NodeT>;
 
   explicit ImageTransport(std::shared_ptr<NodeT> node)
   : node_(std::move(node)) {}
 
-  IMAGE_TRANSPORT_PUBLIC
   ~ImageTransport() = default;
 
   /*!
    * \brief Advertise an image topic, simple version.
    */
-  IMAGE_TRANSPORT_PUBLIC
   Publisher advertise(const std::string & base_topic, uint32_t queue_size, bool latch = false)
   {
     // TODO(ros2) implement when resolved: https://github.com/ros2/ros2/issues/464
@@ -177,7 +108,6 @@ public:
   /**
    * \brief Subscribe to an image topic, version for arbitrary std::function object.
    */
-  IMAGE_TRANSPORT_PUBLIC
   Subscriber subscribe(
     const std::string & base_topic, uint32_t queue_size,
     const Subscriber::Callback & callback,
@@ -196,7 +126,6 @@ public:
   /**
    * \brief Subscribe to an image topic, version for bare function.
    */
-  IMAGE_TRANSPORT_PUBLIC
   Subscriber subscribe(
     const std::string & base_topic, uint32_t queue_size,
     void (* fp)(const ImageConstPtr &),
@@ -301,7 +230,6 @@ public:
   /*!
    * \brief Advertise a synchronized camera raw image + info topic pair, simple version.
    */
-  IMAGE_TRANSPORT_PUBLIC
   CameraPublisher advertiseCamera(
     const std::string & base_topic, uint32_t queue_size,
     bool latch = false)
@@ -333,10 +261,9 @@ public:
    * This version assumes the standard topic naming scheme, where the info topic is
    * named "camera_info" in the same namespace as the base image topic.
    */
-  IMAGE_TRANSPORT_PUBLIC
   CameraSubscriber subscribeCamera(
     const std::string & base_topic, uint32_t queue_size,
-    const CameraSubscriber::Callback & callback,
+    const typename CameraSubscriber::Callback & callback,
     const VoidPtr & tracked_object = VoidPtr(),
     const TransportHints * transport_hints = nullptr)
   {
@@ -351,7 +278,6 @@ public:
   /**
    * \brief Subscribe to a synchronized image & camera info topic pair, version for bare function.
    */
-  IMAGE_TRANSPORT_PUBLIC
   CameraSubscriber subscribeCamera(
     const std::string & base_topic, uint32_t queue_size,
     void (* fp)(
@@ -406,7 +332,6 @@ public:
    * \brief Returns the names of all transports declared in the system. Declared
    * transports are not necessarily built or loadable.
    */
-  IMAGE_TRANSPORT_PUBLIC
   std::vector<std::string> getDeclaredTransports() const
   {
     return image_transport::getDeclaredTransports();
@@ -415,7 +340,6 @@ public:
   /**
    * \brief Returns the names of all transports that are loadable in the system.
    */
-  IMAGE_TRANSPORT_PUBLIC
   std::vector<std::string> getLoadableTransports() const
   {
     return image_transport::getLoadableTransports();
