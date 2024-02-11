@@ -36,7 +36,6 @@
 
 #include "image_transport/create_subscription.hpp"
 #include "image_transport/create_publisher.hpp"
-#include "image_transport/create_camera_publisher.hpp"
 #include "image_transport/create_camera_subscription.hpp"
 #include "image_transport/camera_common.hpp"
 #include "image_transport/loader_fwds.hpp"

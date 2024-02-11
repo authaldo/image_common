@@ -31,17 +31,15 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "rclcpp/macros.hpp"
-#include "rclcpp/node.hpp"
 
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
 
 #include "image_transport/single_subscriber_publisher.hpp"
-#include "image_transport/node_interfaces.hpp"
 #include "image_transport/visibility_control.hpp"
+#include "image_transport/node_interfaces.hpp"
 
 namespace image_transport
 {
@@ -79,7 +77,7 @@ public:
     NodeT && node,
     const std::string & base_topic,
     rmw_qos_profile_t custom_qos = rmw_qos_profile_default)
-  : CameraPublisher(create_node_interfaces(std::forward<NodeT>(node)), base_topic, custom_qos) {}
+    : CameraPublisher(create_node_interfaces(std::forward<NodeT>(node)), base_topic, custom_qos) {}
 
   /*!
    * \brief Returns the number of subscribers that are currently connected to

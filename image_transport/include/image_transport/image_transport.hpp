@@ -48,6 +48,18 @@
 
 namespace image_transport
 {
+/*!
+ * \brief Advertise a camera, free function version.
+ */
+template<typename NodeT>
+IMAGE_TRANSPORT_PUBLIC
+CameraPublisher create_camera_publisher(
+  NodeT && node,
+  const std::string & base_topic,
+  rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
+  rclcpp::PublisherOptions pub_options = rclcpp::PublisherOptions()) {
+    return CameraPublisher(create_node_interfaces(std::forward<NodeT>(node)), base_topic, custom_qos, pub_options);
+}
 
 IMAGE_TRANSPORT_PUBLIC
 std::vector<std::string> getDeclaredTransports();

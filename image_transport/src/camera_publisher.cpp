@@ -36,7 +36,6 @@
 #include "rclcpp/node.hpp"
 
 #include "image_transport/camera_common.hpp"
-#include "image_transport/create_publisher.hpp"
 #include "image_transport/image_transport.hpp"
 
 namespace image_transport
@@ -44,7 +43,7 @@ namespace image_transport
 
 struct CameraPublisher::Impl
 {
-  explicit Impl(const NodeInterfaces::SharedPtr node_interfaces)
+  explicit Impl(image_transport::NodeInterfaces::SharedPtr node_interfaces)
   : logger_(node_interfaces->logging->get_logger()),
     unadvertised_(false)
   {
@@ -90,7 +89,8 @@ CameraPublisher::CameraPublisher(
   std::string info_topic = getCameraInfoTopic(image_topic);
 
   auto qos = rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(custom_qos), custom_qos);
-  impl_->image_pub_ = image_transport::create_publisher(node_interfaces, image_topic, custom_qos, pub_options);
+  impl_->image_pub_ = image_transport::create_publisher(node_interfaces, image_topic, custom_qos,
+                                                        std::move(pub_options));
   impl_->info_pub_ = rclcpp::create_publisher<sensor_msgs::msg::CameraInfo>(node_interfaces->topics, info_topic, qos);
 }
 
