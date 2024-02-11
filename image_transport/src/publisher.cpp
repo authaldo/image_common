@@ -110,12 +110,14 @@ Publisher::Publisher(
   impl_->base_topic_ = image_topic;
   impl_->loader_ = loader;
 
-  auto ns_len = node->get_effective_namespace().length();
+  // TODO: old code used get_effective_namespace of node class?!
+  auto ns_len = strlen(node_interfaces->base->get_namespace());
   std::string param_base_name = image_topic.substr(ns_len);
   std::replace(param_base_name.begin(), param_base_name.end(), '/', '.');
   if (param_base_name.front() == '.') {
     param_base_name = param_base_name.substr(1);
   }
+  rclcpp::ParameterValue allowlist_param;
   std::vector<std::string> allowlist_vec;
   std::set<std::string> allowlist;
   std::vector<std::string> all_transport_names;
@@ -123,17 +125,19 @@ Publisher::Publisher(
     all_transport_names.emplace_back(erase_last_copy(lookup_name, "_pub"));
   }
   try {
-    allowlist_vec = node->declare_parameter<std::vector<std::string>>(
-      param_base_name + ".enable_pub_plugins", all_transport_names);
+    allowlist_param = node_interfaces->parameters->declare_parameter(
+      param_base_name + ".enable_pub_plugins", rclcpp::ParameterValue(all_transport_names));
   } catch (const rclcpp::exceptions::ParameterAlreadyDeclaredException &) {
     RCLCPP_DEBUG_STREAM(
-      node->get_logger(), param_base_name << ".enable_pub_plugins" << " was previously declared"
+      node_interfaces->logging->get_logger(), param_base_name << ".enable_pub_plugins" << " was previously declared"
     );
-    allowlist_vec =
-      node->get_parameter(
+    allowlist_param =
+      node_interfaces->parameters->get_parameter(
       param_base_name +
-      ".enable_pub_plugins").get_value<std::vector<std::string>>();
+      ".enable_pub_plugins").get_parameter_value();
   }
+
+  allowlist_vec = allowlist_param.get<std::vector<std::string>>();
   for (size_t i = 0; i < allowlist_vec.size(); ++i) {
     allowlist.insert(allowlist_vec[i]);
   }

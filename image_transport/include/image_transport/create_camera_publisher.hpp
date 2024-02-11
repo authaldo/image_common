@@ -45,9 +45,20 @@ namespace image_transport
  */
 IMAGE_TRANSPORT_PUBLIC
 CameraPublisher create_camera_publisher(
-  rclcpp::Node * node,
-  const std::string & base_topic,
-  rmw_qos_profile_t custom_qos = rmw_qos_profile_default);
+    NodeInterfaces::SharedPtr node_interfaces,
+    const std::string & base_topic,
+    rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
+    rclcpp::PublisherOptions options = rclcpp::PublisherOptions());
+
+template<typename NodeT>
+CameraPublisher create_camera_publisher(
+    NodeT && node,
+    const std::string & base_topic,
+    rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
+    rclcpp::PublisherOptions options = rclcpp::PublisherOptions())
+{
+  return create_camera_publisher(create_node_interfaces(std::forward<NodeT>(node)), base_topic, custom_qos, options);
+}
 
 }  // namespace image_transport
 

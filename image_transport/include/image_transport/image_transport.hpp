@@ -39,6 +39,7 @@
 
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/camera_subscriber.hpp"
+#include "image_transport/create_publisher.hpp"
 #include "image_transport/publisher.hpp"
 #include "image_transport/subscriber.hpp"
 #include "image_transport/transport_hints.hpp"
@@ -68,7 +69,7 @@ public:
   using VoidPtr = std::shared_ptr<void>;
   using ImageConstPtr = sensor_msgs::msg::Image::ConstSharedPtr;
   using CameraInfoConstPtr = sensor_msgs::msg::CameraInfo::ConstSharedPtr;
-  using CameraSubscriber = CameraSubscriber<NodeT>;
+  using CameraSub = CameraSubscriber<NodeT>;
 
   explicit ImageTransport(std::shared_ptr<NodeT> node)
   : node_(std::move(node)) {}
@@ -80,11 +81,10 @@ public:
    */
   Publisher advertise(const std::string & base_topic, uint32_t queue_size, bool latch = false)
   {
-    // TODO(ros2) implement when resolved: https://github.com/ros2/ros2/issues/464
-    (void) latch;
     rmw_qos_profile_t custom_qos = rmw_qos_profile_default;
     custom_qos.depth = queue_size;
-    return create_publisher(node_.get(), base_topic, custom_qos);
+
+    return advertise(base_topic, custom_qos, latch);
   }
 
   /*!
@@ -93,8 +93,11 @@ public:
   IMAGE_TRANSPORT_PUBLIC
   Publisher advertise(
     const std::string & base_topic, rmw_qos_profile_t custom_qos,
-    bool latch = false);
-
+    bool latch = false) {
+    // TODO(ros2) implement when resolved: https://github.com/ros2/ros2/issues/464
+    (void) latch;
+    return create_publisher(node_, base_topic, custom_qos);
+  }
   /*!
    * \brief Advertise an image topic with subcriber status callbacks.
    */
@@ -113,13 +116,14 @@ public:
     const Subscriber::Callback & callback,
     const VoidPtr & tracked_object = VoidPtr(),
     const TransportHints * transport_hints = nullptr,
-    const rclcpp::SubscriptionOptions options = rclcpp::SubscriptionOptions());
+    const rclcpp::SubscriptionOptions options = rclcpp::SubscriptionOptions())
   {
     (void) tracked_object;
     rmw_qos_profile_t custom_qos = rmw_qos_profile_default;
     custom_qos.depth = queue_size;
+
     return create_subscription(
-      node_.get(), base_topic, callback,
+      create_node_interfaces(node_), base_topic, callback,
       getTransportOrDefault(transport_hints), custom_qos);
   }
 
@@ -178,7 +182,11 @@ public:
     const Subscriber::Callback & callback,
     const VoidPtr & tracked_object,
     const TransportHints * transport_hints,
-    const rclcpp::SubscriptionOptions options);
+    const rclcpp::SubscriptionOptions options) {
+    return subscribe(
+        base_topic, custom_qos,
+        callback, tracked_object, transport_hints, options);
+  }
 
   /**
    * \brief Subscribe to an image topic, version for bare function.
@@ -261,9 +269,9 @@ public:
    * This version assumes the standard topic naming scheme, where the info topic is
    * named "camera_info" in the same namespace as the base image topic.
    */
-  CameraSubscriber subscribeCamera(
+  CameraSub subscribeCamera(
     const std::string & base_topic, uint32_t queue_size,
-    const typename CameraSubscriber::Callback & callback,
+    const typename CameraSub::Callback & callback,
     const VoidPtr & tracked_object = VoidPtr(),
     const TransportHints * transport_hints = nullptr)
   {
@@ -278,7 +286,7 @@ public:
   /**
    * \brief Subscribe to a synchronized image & camera info topic pair, version for bare function.
    */
-  CameraSubscriber subscribeCamera(
+  CameraSub subscribeCamera(
     const std::string & base_topic, uint32_t queue_size,
     void (* fp)(
       const ImageConstPtr &,
@@ -286,7 +294,7 @@ public:
     const TransportHints * transport_hints = nullptr)
   {
     return subscribeCamera(
-      base_topic, queue_size, CameraSubscriber::Callback(fp), VoidPtr(),
+      base_topic, queue_size, CameraSub::Callback(fp), VoidPtr(),
       transport_hints);
   }
 
@@ -295,7 +303,7 @@ public:
    * function with bare pointer.
    */
   template<class T>
-  CameraSubscriber subscribeCamera(
+  CameraSub subscribeCamera(
     const std::string & base_topic, uint32_t queue_size,
     void (T::* fp)(
       const ImageConstPtr &,
@@ -313,7 +321,7 @@ public:
    * function with shared_ptr.
    */
   template<class T>
-  CameraSubscriber subscribeCamera(
+  CameraSub subscribeCamera(
     const std::string & base_topic, uint32_t queue_size,
     void (T::* fp)(
       const ImageConstPtr &,

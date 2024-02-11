@@ -82,12 +82,12 @@ Subscriber create_subscription(
 }
 
 CameraPublisher create_camera_publisher(
-  rclcpp::Node * node,
+  NodeInterfaces::SharedPtr node_interfaces,
   const std::string & base_topic,
   rmw_qos_profile_t custom_qos,
   rclcpp::PublisherOptions pub_options)
 {
-  return CameraPublisher(node, base_topic, custom_qos, pub_options);
+  return CameraPublisher(node_interfaces, base_topic, custom_qos, pub_options);
 }
 
 CameraSubscriber<rclcpp::Node> create_camera_subscription(
