@@ -38,6 +38,7 @@
 #include "image_transport/subscriber_filter.hpp"
 
 #include <rclcpp/create_timer.hpp>
+#include <rclcpp/node_interfaces/node_interfaces.hpp>
 
 inline void increment(int * value)
 {
@@ -99,7 +100,6 @@ struct CameraSubscriber::Impl
 
   rclcpp::Logger logger_;
   SubscriberFilter image_sub_;
-//  message_filters::Subscriber<CameraInfo, rclcpp::node_interfaces::NodeTopicsInterface> info_sub_;
   message_filters::Subscriber<CameraInfo> info_sub_;
   TimeSync sync_;
 
@@ -125,8 +125,16 @@ CameraSubscriber::CameraSubscriber(
   std::string info_topic = getCameraInfoTopic(image_topic);
 
   impl_->image_sub_.subscribe(node_interfaces, image_topic, transport, custom_qos);
-  // TODO: find a way for subscribing using the interfaces
-  //impl_->info_sub_.subscribe(node_interfaces, info_topic, custom_qos);
+
+  // Note: this conversion could potentially be omitted if image_transport::NodeInterfaces is
+  //       replaced by rclcpp::node_interfaces::NodeInterfaces
+  using NodeParametersInterface = rclcpp::node_interfaces::NodeParametersInterface;
+  using NodeTopicsInterface = rclcpp::node_interfaces::NodeTopicsInterface;
+
+  auto sub_interfaces = rclcpp::node_interfaces::NodeInterfaces<NodeParametersInterface,
+                                                                NodeTopicsInterface>(node_interfaces->parameters,
+                                                                                     node_interfaces->topics);
+  impl_->info_sub_.subscribe(sub_interfaces, info_topic, custom_qos);
 
   impl_->sync_.connectInput(impl_->image_sub_, impl_->info_sub_);
   impl_->sync_.registerCallback(std::bind(callback, std::placeholders::_1, std::placeholders::_2));
@@ -141,7 +149,6 @@ CameraSubscriber::CameraSubscriber(
                                                          nullptr,
                                                          node_interfaces->base.get(),
                                                          node_interfaces->timers.get());
-
 }
 
 std::string CameraSubscriber::getTopic() const

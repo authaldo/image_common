@@ -110,7 +110,6 @@ Publisher::Publisher(
   impl_->base_topic_ = image_topic;
   impl_->loader_ = loader;
 
-  // TODO: old code used get_effective_namespace of node class?!
   auto ns_len = strlen(node_interfaces->base->get_namespace());
   std::string param_base_name = image_topic.substr(ns_len);
   std::replace(param_base_name.begin(), param_base_name.end(), '/', '.');
@@ -129,7 +128,8 @@ Publisher::Publisher(
       param_base_name + ".enable_pub_plugins", rclcpp::ParameterValue(all_transport_names));
   } catch (const rclcpp::exceptions::ParameterAlreadyDeclaredException &) {
     RCLCPP_DEBUG_STREAM(
-      node_interfaces->logging->get_logger(), param_base_name << ".enable_pub_plugins" << " was previously declared"
+      node_interfaces->logging->get_logger(), param_base_name << ".enable_pub_plugins"
+                                                              << " was previously declared"
     );
     allowlist_param =
       node_interfaces->parameters->get_parameter(

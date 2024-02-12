@@ -59,7 +59,8 @@ CameraPublisher create_camera_publisher(
   const std::string & base_topic,
   rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
   rclcpp::PublisherOptions pub_options = rclcpp::PublisherOptions()) {
-    return CameraPublisher(create_node_interfaces(std::forward<NodeT>(node)), base_topic, custom_qos, pub_options);
+    return CameraPublisher(create_node_interfaces(std::forward<NodeT>(node)), base_topic,
+                           custom_qos, pub_options);
 }
 
 /*!
@@ -73,8 +74,8 @@ CameraSubscriber create_camera_subscription(
   const CameraSubscriber::Callback & callback,
   const std::string & transport,
   rmw_qos_profile_t custom_qos = rmw_qos_profile_default) {
-        return CameraSubscriber(create_node_interfaces(std::forward<NodeT>(node)), base_topic, callback,
-                                transport, custom_qos);
+        return CameraSubscriber(create_node_interfaces(std::forward<NodeT>(node)), base_topic,
+                                callback, transport, custom_qos);
 }
 
 IMAGE_TRANSPORT_PUBLIC
@@ -151,7 +152,7 @@ public:
 
     return create_subscription(
       create_node_interfaces(node_), base_topic, callback,
-      getTransportOrDefault(transport_hints), custom_qos);
+      getTransportOrDefault(transport_hints), custom_qos, options);
   }
 
   /**

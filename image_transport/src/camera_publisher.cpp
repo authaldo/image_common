@@ -91,7 +91,8 @@ CameraPublisher::CameraPublisher(
   auto qos = rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(custom_qos), custom_qos);
   impl_->image_pub_ = image_transport::create_publisher(node_interfaces, image_topic, custom_qos,
                                                         std::move(pub_options));
-  impl_->info_pub_ = rclcpp::create_publisher<sensor_msgs::msg::CameraInfo>(node_interfaces->topics, info_topic, qos);
+  impl_->info_pub_ = rclcpp::create_publisher<sensor_msgs::msg::CameraInfo>(node_interfaces->topics,
+                                                                            info_topic, qos);
 }
 
 size_t CameraPublisher::getNumSubscribers() const

@@ -32,6 +32,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "rclcpp/node.hpp"
 
@@ -83,9 +84,10 @@ public:
     const std::string & base_topic,
     const Callback & callback,
     const std::string & transport,
-    rmw_qos_profile_t custom_qos = rmw_qos_profile_default) : CameraSubscriber(create_node_interfaces(std::forward<NodeT>(node)),
-                                                                               base_topic, callback, transport,
-                                                                               custom_qos) {}
+    rmw_qos_profile_t custom_qos = rmw_qos_profile_default)
+    : CameraSubscriber(create_node_interfaces(std::forward<NodeT>(node)),
+                                              base_topic, callback, transport,
+                                              custom_qos) {}
 
   /**
    * \brief Get the base topic (on which the raw image is published).
