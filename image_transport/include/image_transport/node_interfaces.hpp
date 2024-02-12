@@ -45,17 +45,20 @@ struct NodeInterfaces
     rclcpp::node_interfaces::NodeBaseInterface::SharedPtr base_interface,
     rclcpp::node_interfaces::NodeTopicsInterface::SharedPtr topics_interface,
     rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_interface,
-    rclcpp::node_interfaces::NodeParametersInterface::SharedPtr parameters_interface)
+    rclcpp::node_interfaces::NodeParametersInterface::SharedPtr parameters_interface,
+    rclcpp::node_interfaces::NodeTimersInterface::SharedPtr timers_interface)
   : base(std::move(base_interface)),
     topics(std::move(topics_interface)),
     logging(std::move(logging_interface)),
-    parameters(std::move(parameters_interface))
+    parameters(std::move(parameters_interface)),
+    timers(std::move(timers_interface))
   {}
 
   rclcpp::node_interfaces::NodeBaseInterface::SharedPtr base;
   rclcpp::node_interfaces::NodeTopicsInterface::SharedPtr topics;
   rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging;
   rclcpp::node_interfaces::NodeParametersInterface::SharedPtr parameters;
+  rclcpp::node_interfaces::NodeTimersInterface::SharedPtr timers;
 };
 
 template<typename NodeT>
@@ -65,7 +68,8 @@ NodeInterfaces::SharedPtr create_node_interfaces(NodeT && node)
     node->get_node_base_interface(),
     node->get_node_topics_interface(),
     node->get_node_logging_interface(),
-    node->get_node_parameters_interface()
+    node->get_node_parameters_interface(),
+    node->get_node_timers_interface()
   );
 }
 

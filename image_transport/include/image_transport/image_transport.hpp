@@ -40,6 +40,7 @@
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/camera_subscriber.hpp"
 #include "image_transport/create_publisher.hpp"
+#include "image_transport/create_subscription.hpp"
 #include "image_transport/publisher.hpp"
 #include "image_transport/subscriber.hpp"
 #include "image_transport/transport_hints.hpp"
@@ -59,6 +60,21 @@ CameraPublisher create_camera_publisher(
   rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
   rclcpp::PublisherOptions pub_options = rclcpp::PublisherOptions()) {
     return CameraPublisher(create_node_interfaces(std::forward<NodeT>(node)), base_topic, custom_qos, pub_options);
+}
+
+/*!
+ * \brief Subscribe to a camera, free function version.
+ */
+template<typename NodeT>
+IMAGE_TRANSPORT_PUBLIC
+CameraSubscriber create_camera_subscription(
+  NodeT && node,
+  const std::string & base_topic,
+  const CameraSubscriber::Callback & callback,
+  const std::string & transport,
+  rmw_qos_profile_t custom_qos = rmw_qos_profile_default) {
+        return CameraSubscriber(create_node_interfaces(std::forward<NodeT>(node)), base_topic, callback,
+                                transport, custom_qos);
 }
 
 IMAGE_TRANSPORT_PUBLIC
@@ -81,7 +97,6 @@ public:
   using VoidPtr = std::shared_ptr<void>;
   using ImageConstPtr = sensor_msgs::msg::Image::ConstSharedPtr;
   using CameraInfoConstPtr = sensor_msgs::msg::CameraInfo::ConstSharedPtr;
-  using CameraSub = CameraSubscriber<NodeT>;
 
   explicit ImageTransport(std::shared_ptr<NodeT> node)
   : node_(std::move(node)) {}
@@ -281,9 +296,9 @@ public:
    * This version assumes the standard topic naming scheme, where the info topic is
    * named "camera_info" in the same namespace as the base image topic.
    */
-  CameraSub subscribeCamera(
+  CameraSubscriber subscribeCamera(
     const std::string & base_topic, uint32_t queue_size,
-    const typename CameraSub::Callback & callback,
+    const typename CameraSubscriber::Callback & callback,
     const VoidPtr & tracked_object = VoidPtr(),
     const TransportHints * transport_hints = nullptr)
   {
@@ -298,7 +313,7 @@ public:
   /**
    * \brief Subscribe to a synchronized image & camera info topic pair, version for bare function.
    */
-  CameraSub subscribeCamera(
+  CameraSubscriber subscribeCamera(
     const std::string & base_topic, uint32_t queue_size,
     void (* fp)(
       const ImageConstPtr &,
@@ -306,7 +321,7 @@ public:
     const TransportHints * transport_hints = nullptr)
   {
     return subscribeCamera(
-      base_topic, queue_size, CameraSub::Callback(fp), VoidPtr(),
+      base_topic, queue_size, CameraSubscriber::Callback(fp), VoidPtr(),
       transport_hints);
   }
 
@@ -315,7 +330,7 @@ public:
    * function with bare pointer.
    */
   template<class T>
-  CameraSub subscribeCamera(
+  CameraSubscriber subscribeCamera(
     const std::string & base_topic, uint32_t queue_size,
     void (T::* fp)(
       const ImageConstPtr &,
@@ -333,7 +348,7 @@ public:
    * function with shared_ptr.
    */
   template<class T>
-  CameraSub subscribeCamera(
+  CameraSubscriber subscribeCamera(
     const std::string & base_topic, uint32_t queue_size,
     void (T::* fp)(
       const ImageConstPtr &,

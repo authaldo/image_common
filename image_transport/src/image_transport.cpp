@@ -36,7 +36,6 @@
 
 #include "image_transport/create_subscription.hpp"
 #include "image_transport/create_publisher.hpp"
-#include "image_transport/create_camera_subscription.hpp"
 #include "image_transport/camera_common.hpp"
 #include "image_transport/loader_fwds.hpp"
 #include "image_transport/publisher_plugin.hpp"
@@ -89,14 +88,14 @@ CameraPublisher create_camera_publisher(
   return CameraPublisher(node_interfaces, base_topic, custom_qos, pub_options);
 }
 
-CameraSubscriber<rclcpp::Node> create_camera_subscription(
-  rclcpp::Node * node,
+CameraSubscriber create_camera_subscription(
+  NodeInterfaces::SharedPtr node_interfaces,
   const std::string & base_topic,
-  const CameraSubscriber<rclcpp::Node>::Callback & callback,
+  const CameraSubscriber::Callback & callback,
   const std::string & transport,
   rmw_qos_profile_t custom_qos)
 {
-  return CameraSubscriber(node, base_topic, callback, transport, custom_qos);
+  return CameraSubscriber(node_interfaces, base_topic, callback, transport, custom_qos);
 }
 
 std::vector<std::string> getDeclaredTransports()

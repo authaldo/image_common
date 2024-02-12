@@ -37,6 +37,7 @@
 #include "message_filters/simple_filter.h"
 
 #include "image_transport/create_subscription.hpp"
+#include "image_transport/node_interfaces.hpp"
 #include "image_transport/visibility_control.hpp"
 
 namespace image_transport
@@ -62,7 +63,6 @@ void callback(const std::shared_ptr<const sensor_msgs::msg::Image>&);
 \endverbatim
  */
 
-template<class NodeT = rclcpp::Node>
 class SubscriberFilter : public message_filters::SimpleFilter<sensor_msgs::msg::Image>
 {
 public:
@@ -71,16 +71,16 @@ public:
    *
    * See the ros::NodeHandle::subscribe() variants for more information on the parameters
    *
-   * \param nh The ros::NodeHandle to use to subscribe.
+   * \param node_interfaces The NodeInterfaces handle to use to subscribe.
    * \param base_topic The topic to subscribe to.
    * \param queue_size The subscription queue size
    * \param transport The transport hint to pass along
    */
   SubscriberFilter(
-    NodeT * node, const std::string & base_topic,
+    NodeInterfaces::SharedPtr node_interfaces, const std::string & base_topic,
     const std::string & transport)
   {
-    subscribe(node, base_topic, transport);
+    subscribe(node_interfaces, base_topic, transport);
   }
 
   /**
@@ -107,7 +107,7 @@ public:
    */
   IMAGE_TRANSPORT_PUBLIC
   void subscribe(
-    NodeT * node,
+    NodeInterfaces::SharedPtr node_interfaces,
     const std::string & base_topic,
     const std::string & transport,
     rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
@@ -115,7 +115,7 @@ public:
   {
     unsubscribe();
     sub_ = image_transport::create_subscription(
-      node, base_topic,
+      node_interfaces, base_topic,
       std::bind(&SubscriberFilter::cb, this, std::placeholders::_1), transport, custom_qos,
       options);
   }

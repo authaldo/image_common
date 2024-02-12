@@ -35,7 +35,7 @@
 #include "rclcpp/node.hpp"
 
 #include "image_transport/create_publisher.hpp"
-#include "image_transport/create_camera_subscription.hpp"
+#include "image_transport/create_subscription.hpp"
 #include "image_transport/image_transport.hpp"
 #include "sensor_msgs/msg/image.hpp"
 

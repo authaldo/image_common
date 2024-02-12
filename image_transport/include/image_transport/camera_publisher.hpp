@@ -73,6 +73,7 @@ public:
     rclcpp::PublisherOptions = rclcpp::PublisherOptions());
 
   template<typename NodeT>
+  IMAGE_TRANSPORT_PUBLIC
   CameraPublisher(
     NodeT && node,
     const std::string & base_topic,
