@@ -124,7 +124,7 @@ TEST_F(TestSubscriber, callback_groups) {
   std::thread executor_thread([&]() {executor.spin();});
 
   // The callbacks sleep for 5 seconds and mutually exclusive callbacks should be blocked.
-  // However, because of the the multithreaded executor and renentrant callback group,
+  // However, because of the multithreaded executor and reentrant callback group,
   // the flags should be set, as the callbacks should be in different threads.
   auto timeout_elapsed = 0.0s;
   auto sleep_duration = 0.1s;
@@ -189,7 +189,7 @@ TEST_F(TestSubscriber, callback_groups_custom_qos) {
   std::thread executor_thread([&]() {executor.spin();});
 
   // The callbacks sleep for 5 seconds and mutually exclusive callbacks should be blocked.
-  // However, because of the the multithreaded executor and renentrant callback group,
+  // However, because of the multithreaded executor and reentrant callback group,
   // the flags should be set, as the callbacks should be in different threads.
   auto timeout_elapsed = 0.0s;
   auto sleep_duration = 0.1s;
