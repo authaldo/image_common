@@ -36,9 +36,10 @@
 
 #include "image_transport/camera_common.hpp"
 #include "image_transport/subscriber_filter.hpp"
+#include "image_transport/node_interfaces.hpp"
 
 #include <rclcpp/create_timer.hpp>
-#include <rclcpp/node_interfaces/node_interfaces.hpp>
+#include <rclcpp/node_interfaces/node_topics_interface.hpp>
 
 inline void increment(int * value)
 {
@@ -98,6 +99,10 @@ struct CameraSubscriber::Impl
     image_received_ = info_received_ = both_received_ = 0;
   }
 
+  using NodeParametersInterface = rclcpp::node_interfaces::NodeParametersInterface;
+  using NodeTopicsInterface = rclcpp::node_interfaces::NodeTopicsInterface;
+  using ReqiredInterfaces = rclcpp::node_interfaces::NodeInterfaces<NodeParametersInterface, NodeTopicsInterface>;
+
   rclcpp::Logger logger_;
   SubscriberFilter image_sub_;
   message_filters::Subscriber<CameraInfo> info_sub_;
@@ -130,11 +135,13 @@ CameraSubscriber::CameraSubscriber(
   //       replaced by rclcpp::node_interfaces::NodeInterfaces
   using NodeParametersInterface = rclcpp::node_interfaces::NodeParametersInterface;
   using NodeTopicsInterface = rclcpp::node_interfaces::NodeTopicsInterface;
+  using RequiredInterfaces = rclcpp::node_interfaces::NodeInterfaces<NodeParametersInterface, NodeTopicsInterface>;
 
-  auto sub_interfaces = rclcpp::node_interfaces::NodeInterfaces<NodeParametersInterface,
-                                                                NodeTopicsInterface>(node_interfaces->parameters,
-                                                                                     node_interfaces->topics);
-  impl_->info_sub_.subscribe(sub_interfaces, info_topic, custom_qos);
+  auto sub_interfaces = std::make_shared<RequiredInterfaces>(node_interfaces->parameters,
+                                                             node_interfaces->topics);
+  impl_->info_sub_.subscribe(RequiredInterfaces(node_interfaces->parameters,
+                                                node_interfaces->topics),
+                             info_topic, custom_qos);
 
   impl_->sync_.connectInput(impl_->image_sub_, impl_->info_sub_);
   impl_->sync_.registerCallback(std::bind(callback, std::placeholders::_1, std::placeholders::_2));
