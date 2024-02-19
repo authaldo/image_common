@@ -48,7 +48,7 @@ namespace image_transport
  */
 IMAGE_TRANSPORT_PUBLIC
 Subscriber create_subscription(
-  NodeInterfaces::SharedPtr node_interfaces,
+  std::shared_ptr<RequiredInterfaces> node_interfaces,
   const std::string & base_topic,
   const Subscriber::Callback & callback,
   const std::string & transport,

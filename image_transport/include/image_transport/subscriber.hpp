@@ -70,7 +70,7 @@ public:
 
   IMAGE_TRANSPORT_PUBLIC
   Subscriber(
-    NodeInterfaces::SharedPtr node_interfaces,
+    std::shared_ptr<RequiredInterfaces> node_interfaces,
     const std::string & base_topic,
     const Callback & callback,
     SubLoaderPtr loader,
@@ -87,8 +87,7 @@ public:
     const std::string & transport,
     rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
     rclcpp::SubscriptionOptions options = rclcpp::SubscriptionOptions())
-  : Subscriber(create_node_interfaces(
-        std::forward<NodeT>(node)), base_topic, callback, loader, transport, custom_qos, options)
+  : Subscriber(create_node_interfaces(std::forward<NodeT>(node)), base_topic, callback, loader, transport, custom_qos, options)
   {}
 
   /**

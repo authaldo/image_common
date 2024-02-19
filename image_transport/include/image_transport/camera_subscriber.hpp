@@ -71,7 +71,7 @@ public:
 
   IMAGE_TRANSPORT_PUBLIC
   CameraSubscriber(
-    NodeInterfaces::SharedPtr node_interfaces,
+    std::shared_ptr<RequiredInterfaces> node_interfaces,
     const std::string & base_topic,
     const Callback & callback,
     const std::string & transport,

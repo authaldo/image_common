@@ -77,7 +77,7 @@ public:
    * \param transport The transport hint to pass along
    */
   SubscriberFilter(
-    NodeInterfaces::SharedPtr node_interfaces, const std::string & base_topic,
+    std::shared_ptr<RequiredInterfaces> node_interfaces, const std::string & base_topic,
     const std::string & transport)
   {
     subscribe(node_interfaces, base_topic, transport);
@@ -107,7 +107,7 @@ public:
    */
   IMAGE_TRANSPORT_PUBLIC
   void subscribe(
-    NodeInterfaces::SharedPtr node_interfaces,
+    std::shared_ptr<RequiredInterfaces> node_interfaces,
     const std::string & base_topic,
     const std::string & transport,
     rmw_qos_profile_t custom_qos = rmw_qos_profile_default,

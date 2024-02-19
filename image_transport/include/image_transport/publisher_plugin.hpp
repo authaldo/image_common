@@ -65,7 +65,7 @@ public:
    * \brief Advertise a topic, simple version.
    */
   void advertise(
-    NodeInterfaces::SharedPtr node_interfaces,
+    const std::shared_ptr<RequiredInterfaces> & node_interfaces,
     const std::string & base_topic,
     rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
     rclcpp::PublisherOptions options = rclcpp::PublisherOptions())
@@ -149,7 +149,7 @@ protected:
    * \brief Advertise a topic. Must be implemented by the subclass.
    */
   virtual void advertiseImpl(
-    NodeInterfaces::SharedPtr node_interfaces,
+    const std::shared_ptr<RequiredInterfaces> & node_interfaces,
     const std::string & base_topic,
     rmw_qos_profile_t custom_qos,
     rclcpp::PublisherOptions options) = 0;

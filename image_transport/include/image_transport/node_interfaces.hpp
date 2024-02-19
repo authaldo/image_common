@@ -32,45 +32,40 @@
 #include <memory>
 #include <utility>
 
-#include "rclcpp/node.hpp"
+#include <rclcpp/node.hpp>
+#include <rclcpp/node_interfaces/node_interfaces.hpp>
 
 namespace image_transport
 {
+/**
+ * Collection of node interfaces which are required for the image transport functionality.
+ */
+using RequiredInterfaces = rclcpp::node_interfaces::NodeInterfaces<rclcpp::node_interfaces::NodeBaseInterface,
+                                                                   rclcpp::node_interfaces::NodeLoggingInterface,
+                                                                   rclcpp::node_interfaces::NodeTimersInterface,
+                                                                   rclcpp::node_interfaces::NodeTopicsInterface,
+                                                                   rclcpp::node_interfaces::NodeParametersInterface>;
 
-struct NodeInterfaces
+/*
+ * Note: three versions of this function are unfortunately necessary since the constructor taking a shared_ptr
+ *       of the 'node_like' has been removed in the rclcpp pull request 2075.
+ */
+template<typename NodeTPtr>
+std::shared_ptr<RequiredInterfaces> create_node_interfaces(std::shared_ptr<NodeTPtr> node)
 {
-  RCLCPP_SMART_PTR_DEFINITIONS(NodeInterfaces)
-
-  NodeInterfaces(
-    rclcpp::node_interfaces::NodeBaseInterface::SharedPtr base_interface,
-    rclcpp::node_interfaces::NodeTopicsInterface::SharedPtr topics_interface,
-    rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_interface,
-    rclcpp::node_interfaces::NodeParametersInterface::SharedPtr parameters_interface,
-    rclcpp::node_interfaces::NodeTimersInterface::SharedPtr timers_interface)
-  : base(std::move(base_interface)),
-    topics(std::move(topics_interface)),
-    logging(std::move(logging_interface)),
-    parameters(std::move(parameters_interface)),
-    timers(std::move(timers_interface))
-  {}
-
-  rclcpp::node_interfaces::NodeBaseInterface::SharedPtr base;
-  rclcpp::node_interfaces::NodeTopicsInterface::SharedPtr topics;
-  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging;
-  rclcpp::node_interfaces::NodeParametersInterface::SharedPtr parameters;
-  rclcpp::node_interfaces::NodeTimersInterface::SharedPtr timers;
-};
+  return std::make_shared<RequiredInterfaces>(*node);
+}
 
 template<typename NodeT>
-NodeInterfaces::SharedPtr create_node_interfaces(NodeT && node)
+std::shared_ptr<RequiredInterfaces> create_node_interfaces(NodeT* && node)
 {
-  return std::make_shared<NodeInterfaces>(
-    node->get_node_base_interface(),
-    node->get_node_topics_interface(),
-    node->get_node_logging_interface(),
-    node->get_node_parameters_interface(),
-    node->get_node_timers_interface()
-  );
+  return std::make_shared<RequiredInterfaces>(*node);
+}
+
+template<typename NodeT>
+std::shared_ptr<RequiredInterfaces> create_node_interfaces(NodeT && node)
+{
+    return std::make_shared<RequiredInterfaces>(node);
 }
 
 }  // namespace image_transport

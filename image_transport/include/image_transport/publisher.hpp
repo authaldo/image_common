@@ -72,7 +72,7 @@ public:
 
   IMAGE_TRANSPORT_PUBLIC
   Publisher(
-    NodeInterfaces::SharedPtr node_interfaces,
+    std::shared_ptr<RequiredInterfaces> node_interfaces,
     const std::string & base_topic,
     PubLoaderPtr loader,
     rmw_qos_profile_t custom_qos,

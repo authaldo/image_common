@@ -55,8 +55,8 @@ struct CameraSubscriber::Impl
   using CameraInfo = sensor_msgs::msg::CameraInfo;
   using TimeSync = message_filters::TimeSynchronizer<Image, CameraInfo>;
 
-  explicit Impl(NodeInterfaces::SharedPtr node_interfaces)
-  : logger_(node_interfaces->logging->get_logger()),
+  explicit Impl(std::shared_ptr<RequiredInterfaces> node_interfaces)
+  : logger_(node_interfaces->get<rclcpp::node_interfaces::NodeLoggingInterface>()->get_logger()),
     sync_(10),
     unsubscribed_(false),
     image_received_(0), info_received_(0), both_received_(0)
@@ -99,10 +99,6 @@ struct CameraSubscriber::Impl
     image_received_ = info_received_ = both_received_ = 0;
   }
 
-  using NodeParametersInterface = rclcpp::node_interfaces::NodeParametersInterface;
-  using NodeTopicsInterface = rclcpp::node_interfaces::NodeTopicsInterface;
-  using ReqiredInterfaces = rclcpp::node_interfaces::NodeInterfaces<NodeParametersInterface, NodeTopicsInterface>;
-
   rclcpp::Logger logger_;
   SubscriberFilter image_sub_;
   message_filters::Subscriber<CameraInfo> info_sub_;
@@ -115,7 +111,7 @@ struct CameraSubscriber::Impl
 };
 
 CameraSubscriber::CameraSubscriber(
-  NodeInterfaces::SharedPtr node_interfaces,
+  std::shared_ptr<RequiredInterfaces> node_interfaces,
   const std::string & base_topic,
   const Callback & callback,
   const std::string & transport,
@@ -126,21 +122,13 @@ CameraSubscriber::CameraSubscriber(
   // to figure out the sibling camera_info topic.
   std::string image_topic = rclcpp::expand_topic_or_service_name(
     base_topic,
-    node_interfaces->base->get_name(), node_interfaces->base->get_namespace());
+    node_interfaces->get_node_base_interface()->get_name(),
+    node_interfaces->get_node_base_interface()->get_namespace());
   std::string info_topic = getCameraInfoTopic(image_topic);
 
   impl_->image_sub_.subscribe(node_interfaces, image_topic, transport, custom_qos);
 
-  // Note: this conversion could potentially be omitted if image_transport::NodeInterfaces is
-  //       replaced by rclcpp::node_interfaces::NodeInterfaces
-  using NodeParametersInterface = rclcpp::node_interfaces::NodeParametersInterface;
-  using NodeTopicsInterface = rclcpp::node_interfaces::NodeTopicsInterface;
-  using RequiredInterfaces = rclcpp::node_interfaces::NodeInterfaces<NodeParametersInterface, NodeTopicsInterface>;
-
-  auto sub_interfaces = std::make_shared<RequiredInterfaces>(node_interfaces->parameters,
-                                                             node_interfaces->topics);
-  impl_->info_sub_.subscribe(RequiredInterfaces(node_interfaces->parameters,
-                                                node_interfaces->topics),
+  impl_->info_sub_.subscribe(*node_interfaces,
                              info_topic, custom_qos);
 
   impl_->sync_.connectInput(impl_->image_sub_, impl_->info_sub_);
@@ -154,8 +142,8 @@ CameraSubscriber::CameraSubscriber(
   impl_->check_synced_timer_ = rclcpp::create_wall_timer(std::chrono::seconds(1),
                                                          std::bind(&Impl::checkImagesSynchronized, impl_.get()),
                                                          nullptr,
-                                                         node_interfaces->base.get(),
-                                                         node_interfaces->timers.get());
+                                                         node_interfaces->get_node_base_interface().get(),
+                                                         node_interfaces->get_node_timers_interface().get());
 }
 
 std::string CameraSubscriber::getTopic() const

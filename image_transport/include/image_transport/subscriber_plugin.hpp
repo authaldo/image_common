@@ -67,7 +67,7 @@ public:
    * \brief Subscribe to an image topic, version for arbitrary std::function object.
    */
   void subscribe(
-    NodeInterfaces::SharedPtr node_interfaces, const std::string & base_topic,
+    const std::shared_ptr<RequiredInterfaces> & node_interfaces, const std::string & base_topic,
     const Callback & callback,
     rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
     rclcpp::SubscriptionOptions options = rclcpp::SubscriptionOptions())
@@ -79,7 +79,7 @@ public:
    * \brief Subscribe to an image topic, version for bare function.
    */
   void subscribe(
-    NodeInterfaces::SharedPtr node_interfaces, const std::string & base_topic,
+    const std::shared_ptr<RequiredInterfaces> & node_interfaces, const std::string & base_topic,
     void (* fp)(const sensor_msgs::msg::Image::ConstSharedPtr &),
     rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
     rclcpp::SubscriptionOptions options = rclcpp::SubscriptionOptions())
@@ -154,7 +154,7 @@ protected:
    * \brief Subscribe to an image transport topic. Must be implemented by the subclass.
    */
   virtual void subscribeImpl(
-    NodeInterfaces::SharedPtr node_interfaces,
+    const std::shared_ptr<RequiredInterfaces> & node_interfaces,
     const std::string & base_topic,
     const Callback & callback,
     rmw_qos_profile_t custom_qos,

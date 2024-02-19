@@ -48,8 +48,8 @@ namespace image_transport
 
 struct Publisher::Impl
 {
-  explicit Impl(const NodeInterfaces::SharedPtr & node_interfaces)
-  : logger_(node_interfaces->logging->get_logger()),
+  explicit Impl(const std::shared_ptr<RequiredInterfaces> & node_interfaces)
+  : logger_(node_interfaces->get<rclcpp::node_interfaces::NodeLoggingInterface>()->get_logger()),
     unadvertised_(false) {}
 
   ~Impl()
@@ -96,7 +96,7 @@ struct Publisher::Impl
 };
 
 Publisher::Publisher(
-  NodeInterfaces::SharedPtr node_interfaces,
+  std::shared_ptr<RequiredInterfaces> node_interfaces,
   const std::string & base_topic,
   PubLoaderPtr loader, rmw_qos_profile_t custom_qos,
   rclcpp::PublisherOptions options)
@@ -106,11 +106,12 @@ Publisher::Publisher(
   // properly (#3652).
   std::string image_topic = rclcpp::expand_topic_or_service_name(
     base_topic,
-    node_interfaces->base->get_name(), node_interfaces->base->get_namespace());
+    node_interfaces->get_node_base_interface()->get_name(),
+    node_interfaces->get_node_base_interface()->get_namespace());
   impl_->base_topic_ = image_topic;
   impl_->loader_ = loader;
 
-  auto ns_len = strlen(node_interfaces->base->get_namespace());
+  auto ns_len = strlen(node_interfaces->get_node_base_interface()->get_namespace());
   std::string param_base_name = image_topic.substr(ns_len);
   std::replace(param_base_name.begin(), param_base_name.end(), '/', '.');
   if (param_base_name.front() == '.') {
@@ -124,15 +125,15 @@ Publisher::Publisher(
     all_transport_names.emplace_back(erase_last_copy(lookup_name, "_pub"));
   }
   try {
-    allowlist_param = node_interfaces->parameters->declare_parameter(
+    allowlist_param = node_interfaces->get_node_parameters_interface()->declare_parameter(
       param_base_name + ".enable_pub_plugins", rclcpp::ParameterValue(all_transport_names));
   } catch (const rclcpp::exceptions::ParameterAlreadyDeclaredException &) {
     RCLCPP_DEBUG_STREAM(
-      node_interfaces->logging->get_logger(), param_base_name << ".enable_pub_plugins"
+      node_interfaces->get_node_logging_interface()->get_logger(), param_base_name << ".enable_pub_plugins"
                                                               << " was previously declared"
     );
     allowlist_param =
-      node_interfaces->parameters->get_parameter(
+      node_interfaces->get_node_parameters_interface()->get_parameter(
       param_base_name +
       ".enable_pub_plugins").get_parameter_value();
   }

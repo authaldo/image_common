@@ -101,7 +101,7 @@ public:
 
 protected:
   void advertiseImpl(
-    NodeInterfaces::SharedPtr node_interfaces,
+    const std::shared_ptr<RequiredInterfaces> & node_interfaces,
     const std::string & base_topic,
     rmw_qos_profile_t custom_qos,
     rclcpp::PublisherOptions options) override
@@ -112,8 +112,13 @@ protected:
     RCLCPP_DEBUG(simple_impl_->logger_, "getTopicToAdvertise: %s", transport_topic.c_str());
     auto qos = rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(custom_qos), custom_qos);
 
-    simple_impl_->pub_ = rclcpp::create_publisher<M>(
-      node_interfaces->parameters, node_interfaces->topics, transport_topic, qos, options);
+    // temporary variables are unfortunately necessary due to different passing conventions for shared pointers
+    // between rclcpp core modules for publishers and the node interfaces class
+    auto node_params_interface = node_interfaces->get_node_parameters_interface();
+    auto node_topics_interface = node_interfaces->get_node_topics_interface();
+    simple_impl_->pub_ = rclcpp::create_publisher<M>(node_params_interface,
+                                                     node_topics_interface,
+                                                     transport_topic, qos, options);
   }
 
   //! Generic function for publishing the internal message type.
@@ -144,12 +149,12 @@ protected:
 private:
   struct SimplePublisherPluginImpl
   {
-    explicit SimplePublisherPluginImpl(NodeInterfaces::SharedPtr node_interfaces)
+    explicit SimplePublisherPluginImpl(std::shared_ptr<RequiredInterfaces> node_interfaces)
     : node_interfaces_(std::move(node_interfaces)),
-      logger_(node_interfaces_->logging->get_logger())
+      logger_(node_interfaces_->get<rclcpp::node_interfaces::NodeLoggingInterface>()->get_logger())
     {}
 
-    NodeInterfaces::SharedPtr node_interfaces_;
+    std::shared_ptr<RequiredInterfaces> node_interfaces_;
     rclcpp::Logger logger_;
     typename rclcpp::Publisher<M>::SharedPtr pub_;
   };

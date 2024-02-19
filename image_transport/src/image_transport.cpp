@@ -59,7 +59,7 @@ struct Impl
 static Impl * kImpl = new Impl();
 
 Publisher create_publisher(
-  NodeInterfaces::SharedPtr node_interfaces,
+  std::shared_ptr<RequiredInterfaces> node_interfaces,
   const std::string & base_topic,
   rmw_qos_profile_t custom_qos,
   rclcpp::PublisherOptions options)
@@ -68,7 +68,7 @@ Publisher create_publisher(
 }
 
 Subscriber create_subscription(
-  NodeInterfaces::SharedPtr node_interfaces,
+  std::shared_ptr<RequiredInterfaces> node_interfaces,
   const std::string & base_topic,
   const Subscriber::Callback & callback,
   const std::string & transport,
@@ -80,7 +80,7 @@ Subscriber create_subscription(
 }
 
 CameraPublisher create_camera_publisher(
-  NodeInterfaces::SharedPtr node_interfaces,
+  std::shared_ptr<RequiredInterfaces> node_interfaces,
   const std::string & base_topic,
   rmw_qos_profile_t custom_qos,
   rclcpp::PublisherOptions pub_options)
@@ -89,7 +89,7 @@ CameraPublisher create_camera_publisher(
 }
 
 CameraSubscriber create_camera_subscription(
-  NodeInterfaces::SharedPtr node_interfaces,
+  std::shared_ptr<RequiredInterfaces> node_interfaces,
   const std::string & base_topic,
   const CameraSubscriber::Callback & callback,
   const std::string & transport,

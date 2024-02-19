@@ -47,8 +47,8 @@ namespace image_transport
 
 struct Subscriber::Impl
 {
-  Impl(const NodeInterfaces::SharedPtr & node_interfaces, SubLoaderPtr loader)
-  : logger_(node_interfaces->logging->get_logger()),
+  Impl(const std::shared_ptr<RequiredInterfaces> & node_interfaces, SubLoaderPtr loader)
+  : logger_(node_interfaces->get<rclcpp::node_interfaces::NodeLoggingInterface>()->get_logger()),
     loader_(loader),
     unsubscribed_(false)
   {
@@ -83,7 +83,7 @@ struct Subscriber::Impl
 };
 
 Subscriber::Subscriber(
-  NodeInterfaces::SharedPtr node_interfaces,
+  std::shared_ptr<RequiredInterfaces> node_interfaces,
   const std::string & base_topic,
   const Callback & callback,
   SubLoaderPtr loader,

@@ -49,7 +49,7 @@ namespace image_transport
  */
 IMAGE_TRANSPORT_PUBLIC
 Publisher create_publisher(
-  NodeInterfaces::SharedPtr node_interfaces,
+  std::shared_ptr<RequiredInterfaces> node_interfaces,
   const std::string & base_topic,
   rmw_qos_profile_t custom_qos = rmw_qos_profile_default,
   rclcpp::PublisherOptions options = rclcpp::PublisherOptions());

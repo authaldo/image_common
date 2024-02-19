@@ -35,7 +35,7 @@
 #include <vector>
 #include <utility>
 
-#include "rclcpp/node.hpp"
+#include <rclcpp/node.hpp>
 
 #include "image_transport/camera_publisher.hpp"
 #include "image_transport/camera_subscriber.hpp"
@@ -124,7 +124,7 @@ public:
     bool latch = false) {
     // TODO(ros2) implement when resolved: https://github.com/ros2/ros2/issues/464
     (void) latch;
-    return create_publisher(node_, base_topic, custom_qos);
+    return create_publisher(create_node_interfaces(node_), base_topic, custom_qos);
   }
   /*!
    * \brief Advertise an image topic with subcriber status callbacks.
