@@ -31,10 +31,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "rclcpp/node.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/logging.hpp"
+#include "rclcpp/create_publisher.hpp"
 
 #include "image_transport/publisher_plugin.hpp"
 #include "image_transport/visibility_control.hpp"
@@ -63,7 +65,7 @@ template<class M>
 class SimplePublisherPlugin : public PublisherPlugin
 {
 public:
-  virtual ~SimplePublisherPlugin() {}
+  ~SimplePublisherPlugin() = default;
 
   size_t getNumSubscribers() const override
   {
@@ -99,17 +101,24 @@ public:
 
 protected:
   void advertiseImpl(
-    rclcpp::Node * node,
+    const std::shared_ptr<RequiredInterfaces> & node_interfaces,
     const std::string & base_topic,
     rmw_qos_profile_t custom_qos,
     rclcpp::PublisherOptions options) override
   {
     std::string transport_topic = getTopicToAdvertise(base_topic);
-    simple_impl_ = std::make_unique<SimplePublisherPluginImpl>(node);
+    simple_impl_ = std::make_unique<SimplePublisherPluginImpl>(node_interfaces);
 
     RCLCPP_DEBUG(simple_impl_->logger_, "getTopicToAdvertise: %s", transport_topic.c_str());
     auto qos = rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(custom_qos), custom_qos);
-    simple_impl_->pub_ = node->create_publisher<M>(transport_topic, qos, options);
+
+    // temporary variables are unfortunately necessary due to different passing conventions for shared pointers
+    // between rclcpp core modules for publishers and the node interfaces class
+    auto node_params_interface = node_interfaces->get_node_parameters_interface();
+    auto node_topics_interface = node_interfaces->get_node_topics_interface();
+    simple_impl_->pub_ = rclcpp::create_publisher<M>(node_params_interface,
+                                                     node_topics_interface,
+                                                     transport_topic, qos, options);
   }
 
   //! Generic function for publishing the internal message type.
@@ -140,13 +149,12 @@ protected:
 private:
   struct SimplePublisherPluginImpl
   {
-    explicit SimplePublisherPluginImpl(rclcpp::Node * node)
-    : node_(node),
-      logger_(node->get_logger())
-    {
-    }
+    explicit SimplePublisherPluginImpl(std::shared_ptr<RequiredInterfaces> node_interfaces)
+    : node_interfaces_(std::move(node_interfaces)),
+      logger_(node_interfaces_->get<rclcpp::node_interfaces::NodeLoggingInterface>()->get_logger())
+    {}
 
-    rclcpp::Node * node_;
+    std::shared_ptr<RequiredInterfaces> node_interfaces_;
     rclcpp::Logger logger_;
     typename rclcpp::Publisher<M>::SharedPtr pub_;
   };

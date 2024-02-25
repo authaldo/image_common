@@ -32,6 +32,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "rclcpp/node.hpp"
 
@@ -39,11 +40,10 @@
 #include "sensor_msgs/msg/image.hpp"
 
 #include "image_transport/visibility_control.hpp"
+#include "image_transport/node_interfaces.hpp"
 
 namespace image_transport
 {
-
-class ImageTransport;
 
 /**
  * \brief Manages a subscription callback on synchronized Image and CameraInfo topics.
@@ -71,11 +71,23 @@ public:
 
   IMAGE_TRANSPORT_PUBLIC
   CameraSubscriber(
-    rclcpp::Node * node,
+    std::shared_ptr<RequiredInterfaces> node_interfaces,
     const std::string & base_topic,
     const Callback & callback,
     const std::string & transport,
-    rmw_qos_profile_t = rmw_qos_profile_default);
+    rmw_qos_profile_t custom_qos = rmw_qos_profile_default);
+
+  template<typename NodeT>
+  IMAGE_TRANSPORT_PUBLIC
+  CameraSubscriber(
+    NodeT && node,
+    const std::string & base_topic,
+    const Callback & callback,
+    const std::string & transport,
+    rmw_qos_profile_t custom_qos = rmw_qos_profile_default)
+    : CameraSubscriber(create_node_interfaces(std::forward<NodeT>(node)),
+                                              base_topic, callback, transport,
+                                              custom_qos) {}
 
   /**
    * \brief Get the base topic (on which the raw image is published).
